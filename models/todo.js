@@ -7,7 +7,7 @@ const todoSchema = new Schema({
   },
   isDone: {
     type: Boolean,
-    default: false  //預設為未完成
+    default: false  
   }
 })
 
