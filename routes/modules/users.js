@@ -2,14 +2,15 @@ const express = require('express')
 const router = express.Router()
 const User = require('../../models/user')
 const passport = require('passport')
+const bcrypt = require('bcryptjs')
 
 router.get('/login', (req, res) => {
   res.render('login')
 })
 
 router.post('/login', passport.authenticate('local', {
-  successRedirect:'/',
-  failureRedirect:'/users/login'
+  successRedirect: '/',
+  failureRedirect: '/users/login'
 }))
 
 router.get('/register', (req, res) => {
@@ -18,7 +19,7 @@ router.get('/register', (req, res) => {
 
 router.post('/register', (req, res) => {
   const { name, email, password, confirmPassword } = req.body
-  const errors =[]
+  const errors = []
 
   if (!name || !email || !password || !confirmPassword) {
     errors.push({ message: '所有欄位都是必填' })
@@ -37,7 +38,7 @@ router.post('/register', (req, res) => {
   }
 
   User.findOne({ email }).then(user => {
-    if ( user ) {
+    if (user) {
       errors.push({ message: '這個Email已經註冊過了' })
       res.render('register', {
         errors,
@@ -46,17 +47,19 @@ router.post('/register', (req, res) => {
         password,
         confirmPassword
       })
-    } else {
-      return User.create({
+    }
+    return bcrypt
+      .genSalt(10) //產生「鹽」，並設定複雜度係數為 10
+      .then(salt => bcrypt.hash(password, salt))  //使用者密碼「加鹽」，產生雜湊值
+      .then(hash => User.create({
         name,
         email,
-        password
-      })
+        password: hash //雜湊值取代原本使用者密碼
+      }))
       .then(() => res.redirect('/'))
       .catch(err => console.log(err))
-    }
   })
-  .catch(err => console.log(err))
+    .catch(err => console.log(err))
 })
 
 router.get('/logout', (req, res) => {
