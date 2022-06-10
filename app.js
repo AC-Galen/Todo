@@ -5,6 +5,11 @@ const bodyParser = require('body-parser')
 const methodOverride = require('method-override')
 const flash = require('connect-flash')
 
+if(process.env.NODE_ENV !== 'production') {
+  require('dotenv').config()
+}
+
+
 const routes = require('./routes')
 
 const userPassport = require('./config/passport')
@@ -13,10 +18,10 @@ const res = require('express/lib/response')
 require('./config/mongoose')
 
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT
 
 app.use(session ({
-  secret: 'ThisIsMySecret',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true
 }))
